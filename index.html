@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f7f7f4">
+<title>Moje wartości — tablica i oceny</title>
+<style>
+:root{font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#262934;background:#f7f7f4;font-synthesis:none}
+*{box-sizing:border-box}
+html,body{margin:0;min-width:320px;height:100%;overflow:hidden}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:3px solid #5d72d9;outline-offset:2px}
+button:disabled{cursor:not-allowed;opacity:.45}
+.app{height:100dvh;display:flex;flex-direction:column;min-height:400px}
+.topbar{position:relative;z-index:20;display:flex;align-items:center;gap:18px;padding:17px 28px 14px;background:#fff;box-shadow:0 1px 0 #e9e9e5;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:13px;min-width:230px;margin-right:auto}
+.logo{width:42px;height:42px;display:grid;place-items:center;background:#ffdd71;border-radius:12px;box-shadow:inset 0 -3px rgba(0,0,0,.06);font-size:24px;transform:rotate(-4deg)}
+.brand h1{font-size:17px;font-weight:760;letter-spacing:-.025em;margin:0}
+.brand p{font-size:12px;color:#7b7c86;margin:3px 0 0}
+.tabs{display:flex;gap:4px;background:#f3f4f4;padding:4px;border-radius:12px}
+.tab{border:0;background:transparent;color:#646873;font-weight:670;padding:10px 15px;border-radius:9px;font-size:13px;white-space:nowrap}
+.tab[aria-selected="true"]{color:#242735;background:white;box-shadow:0 1px 5px #11111116}
+.counter{color:#5d6171;font-size:12px;background:#f7f7f5;border:1px solid #ecece8;padding:9px 13px;border-radius:22px;font-weight:650;white-space:nowrap}
+.toolbar{z-index:10;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:11px 26px;border-bottom:1px solid #e5e5e0;background:#fbfbf9}
+.toolbar-side{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.toolbtn{display:inline-flex;justify-content:center;align-items:center;gap:7px;border:1px solid #e2e3e1;background:#fff;padding:8px 12px;border-radius:9px;color:#383c45;font-size:12px;font-weight:660;white-space:nowrap;min-height:34px}
+.toolbtn:hover{border-color:#c6c6c2;background:#fdfdfb}
+.toolbtn.primary{background:#272936;color:#fff;border-color:#272936}
+.toolbtn.primary:hover{background:#3d404e}
+.toolbtn.icononly{width:34px;padding:7px;font-size:16px}
+.toolbar-tip{color:#81818a;font-size:12px}
+#boardPanel{flex:1;display:flex;min-height:0;position:relative;overflow:hidden}
+.board-viewport{flex:1;min-width:0;position:relative;overflow:hidden;touch-action:none;cursor:grab;background-color:#f8f8f6;background-image:radial-gradient(#d8d8d3 1px,transparent 1px);background-size:24px 24px;user-select:none}
+.board-viewport.panning{cursor:grabbing}
+.stage{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
+.note{--paper:#fff0b4;position:absolute;width:218px;min-height:169px;background:var(--paper);border-radius:3px 11px 9px 6px;box-shadow:1px 2px 3px rgba(41,36,18,.08),2px 11px 17px rgba(41,36,18,.12);display:flex;flex-direction:column;transform:rotate(var(--tilt,0deg));border:1px solid rgba(0,0,0,.035);cursor:default;transition:box-shadow .16s;touch-action:none}
+.note:hover,.note:focus-within{z-index:1000}
+.note:hover{box-shadow:1px 3px 4px rgba(41,36,18,.10),3px 14px 24px rgba(41,36,18,.18)}
+.note.dragging{z-index:2000!important;transform:rotate(0deg) scale(1.03);box-shadow:0 20px 42px #20253135}
+.note-top{display:flex;align-items:center;justify-content:space-between;gap:5px;padding:8px 9px 0}
+.color-control{position:relative}
+.swatch-trigger{width:29px;height:27px;background:#ffffff70;border:1px solid #2b2b2b13;border-radius:7px;display:flex;align-items:center;justify-content:center;padding:0;gap:3px}
+.swatch{width:13px;height:13px;background:var(--paper);border:1px solid #26293436;border-radius:50%;display:block}
+.chevron{font-size:11px;color:#727071}
+.remove-note{border:0;background:transparent;color:#7c786f77;font-weight:700;font-size:15px;line-height:1;width:22px;height:24px;border-radius:5px;padding:0;opacity:.25}.note:hover .remove-note,.note:focus-within .remove-note{opacity:.75}.remove-note:hover{color:#a93846;background:#ffffff65;opacity:1!important}
+.grip{margin-left:auto;min-width:46px;height:27px;display:flex;align-items:center;justify-content:flex-end;color:#8b846d;cursor:grab;border:0;background:transparent;padding:0 5px;letter-spacing:2px;font-size:18px;touch-action:none}
+.grip:active{cursor:grabbing}
+.note-text{resize:none;display:block;width:100%;min-height:77px;flex:1;border:0;outline:0;background:transparent;padding:11px 15px 9px;color:#2f2f31;line-height:1.26;font-weight:735;font-size:18px;letter-spacing:-.028em;overflow:hidden;touch-action:auto;user-select:text}
+.note-text::placeholder{color:#7a7568ad}
+.note-footer{margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:6px;padding:7px 10px 10px;border-top:1px solid #25251b14}
+.score-label{font-size:11px;color:#5e5a57;font-weight:690;letter-spacing:.005em}
+.note-score{appearance:none;-webkit-appearance:none;font-size:12px;font-weight:760;background:#ffffff93;border:1px solid #5757571a;border-radius:7px;min-width:91px;padding:7px 23px 7px 8px;color:#36353b;cursor:pointer;background-image:url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="14" height="10" viewBox="0 0 14 10"%3E%3Cpath d="m3 3 4 4 4-4" stroke="%23555" stroke-width="1.7" fill="none"/%3E%3C/svg%3E');background-position:right 7px center;background-repeat:no-repeat}
+.palette{position:absolute;left:0;top:32px;z-index:5000;display:flex;gap:6px;background:#fff;padding:9px;border-radius:10px;box-shadow:0 7px 22px #18192236;border:1px solid #eaeaea;min-width:max-content}
+.palette[hidden]{display:none}
+.palette button{width:25px;height:25px;border-radius:50%;border:1px solid #00000017;padding:0}
+.palette button.selected{outline:2px solid #444b64;outline-offset:2px}
+.board-help{position:absolute;bottom:18px;left:22px;padding:8px 11px;border:1px solid #e5e5e2;background:#fffffff2;color:#82838a;border-radius:10px;font-size:11px;box-shadow:0 2px 10px #0000000b;pointer-events:none}
+.zoom-panel{position:absolute;bottom:17px;right:20px;background:#fff;border:1px solid #e4e5e4;box-shadow:0 2px 13px #0000000e;border-radius:11px;display:flex;align-items:center;gap:2px;padding:5px}
+.zoom-panel button{border:0;background:transparent;border-radius:7px;min-width:32px;height:32px;font-size:18px;color:#4a4e59}
+.zoom-panel button:hover{background:#f1f1f0}
+#zoomValue{font-size:12px;font-weight:770;min-width:44px;text-align:center;color:#4c505d}
+#listPanel{flex:1;min-height:0;overflow:auto;background:#f8f8f6;padding:36px 24px 65px}
+.list-wrap{max-width:930px;margin:0 auto}
+.list-heading{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:flex-end;margin-bottom:23px}
+.list-heading h2{font-size:28px;margin:0 0 7px;letter-spacing:-.035em}
+.list-heading p{font-size:13px;color:#7a7b82;margin:0;line-height:1.5}
+.list-filters{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.filter-input,.filter-select{font-size:12px;background:#fff;color:#353943;border:1px solid #dedfdf;border-radius:9px;padding:10px 12px;min-height:39px}
+.filter-input{width:175px;max-width:40vw}
+.list-table{background:white;border:1px solid #e7e7e6;border-radius:14px;overflow:hidden;box-shadow:0 5px 25px #17182107}
+.list-header,.value-row{display:grid;grid-template-columns:80px minmax(150px,1fr) 142px 115px;align-items:center;gap:12px;padding:13px 20px}
+.list-header{background:#fbfbfa;color:#9697a0;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:770}
+.value-row{border-top:1px solid #f1f0ee;min-height:69px}
+.value-row:hover{background:#fcfcfa}
+.rank{display:inline-flex;justify-content:center;align-items:center;width:36px;height:36px;border-radius:11px;background:#f1f1ef;color:#858591;font-weight:830;font-size:15px}
+.rank.filled{background:#272936;color:white}
+.list-note-title{min-width:0;border:1px solid transparent;background:transparent;padding:8px;border-radius:7px;font-size:15px;color:#2e3039;font-weight:660;outline:0;width:100%;text-overflow:ellipsis}
+.list-note-title:hover,.list-note-title:focus{border-color:#e1e2e4;background:#fff}
+.list-color{display:inline-block;width:14px;height:14px;border-radius:4px;border:1px solid #00000019;margin-right:8px;vertical-align:-2px}
+.list-score{background:white;border:1px solid #e0e1e2;border-radius:8px;padding:7px 9px;min-width:100px;color:#343944;font-size:12px;font-weight:690}
+.locate{background:transparent;border:0;color:#646a92;font-size:12px;font-weight:680;text-align:left;padding:7px 4px}
+.locate:hover{text-decoration:underline}
+.empty-state{padding:60px 20px;text-align:center;color:#8b8c94}
+.empty-emoji{font-size:40px;margin-bottom:15px}
+.empty-state strong{display:block;color:#4b4d58;margin-bottom:8px;font-size:16px}
+.empty-state p{font-size:13px;line-height:1.5;margin:0}
+.bottom-line{text-align:right;font-size:11px;color:#9a9a9f;margin-top:16px}
+.toast{position:fixed;bottom:74px;left:50%;transform:translateX(-50%) translateY(16px);background:#2e3039;color:#fff;font-size:12px;padding:11px 16px;border-radius:10px;box-shadow:0 7px 25px #0003;opacity:0;transition:.2s;pointer-events:none;z-index:30000;max-width:90vw}
+.toast.visible{opacity:1;transform:translateX(-50%) translateY(0)}
+.file-input{display:none}
+[hidden]{display:none!important}
+@media (max-width:800px){.topbar{gap:12px;padding:12px 13px}.brand{min-width:0;flex:1 1 100%}.logo{width:36px;height:36px}.tabs{order:2}.counter{order:3;margin-left:auto}.toolbar{padding:9px 12px}.toolbar-tip{display:none}.board-help{max-width:235px;line-height:1.5;bottom:12px;left:11px}.zoom-panel{bottom:12px;right:10px}.list-header,.value-row{grid-template-columns:52px minmax(100px,1fr) 96px;gap:7px;padding:13px 10px}.list-header>div:last-child,.locate{display:none}.list-score{min-width:83px;width:90px}.list-heading h2{font-size:23px}.list-filters{width:100%}.filter-input{flex:1;max-width:none}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand"><div class="logo" aria-hidden="true">✦</div><div><h1>Moje wartości</h1><p>Przestrzeń do refleksji i priorytetyzacji</p></div></div>
+    <nav class="tabs" role="tablist" aria-label="Widok">
+      <button id="boardTab" class="tab" role="tab" aria-selected="true" aria-controls="boardPanel" type="button">▦ &nbsp;Tablica wartości</button>
+      <button id="listTab" class="tab" role="tab" aria-selected="false" aria-controls="listPanel" type="button">☷ &nbsp;Moje oceny</button>
+    </nav>
+    <div class="counter" id="topCount" aria-live="polite">Oceniono 0 z 41</div>
+  </header>
+  <div class="toolbar" id="boardToolbar">
+    <div class="toolbar-side"><button type="button" class="toolbtn primary" id="addBtn">＋ Dodaj wartość</button><button type="button" class="toolbtn" id="arrangeBtn">▦ Ułóż w siatkę</button><span class="toolbar-tip">Przesuwaj karteczki za uchwyt • kliknij tekst, aby go edytować</span></div>
+    <div class="toolbar-side"><button type="button" class="toolbtn" id="exportBtn">↓ Eksport JSON</button><button type="button" class="toolbtn" id="importBtn">↑ Import JSON</button><button type="button" class="toolbtn" id="resetBtn" title="Przywróć 41 początkowych wartości">↺ Reset</button></div>
+  </div>
+  <div class="toolbar" id="listToolbar" hidden><div class="toolbar-side"><span class="toolbar-tip" style="display:inline">Oceny synchronizują się automatycznie z tablicą.</span></div><div class="toolbar-side"><button type="button" class="toolbtn" id="exportBtn2">↓ Eksport JSON</button></div></div>
+  <main id="boardPanel" role="tabpanel" aria-labelledby="boardTab">
+    <div class="board-viewport" id="viewport" aria-label="Tablica wartości. Przeciągaj tło, aby przesuwać widok."><div id="stage" class="stage"></div></div>
+    <div class="board-help">Przeciągaj puste tło, by przesuwać tablicę. Kółko myszy: przybliżanie.</div>
+    <div class="zoom-panel" aria-label="Zoom tablicy"><button type="button" id="zoomOut" aria-label="Pomniejsz">−</button><span id="zoomValue">100%</span><button type="button" id="zoomIn" aria-label="Powiększ">+</button><button type="button" id="fitBtn" aria-label="Dopasuj wszystkie karteczki" title="Pokaż wszystkie">⤢</button></div>
+  </main>
+  <main id="listPanel" role="tabpanel" aria-labelledby="listTab" hidden>
+    <div class="list-wrap">
+      <div class="list-heading"><div><h2>Moje priorytety</h2><p id="listSubtitle">Wartości uporządkowane według przypisanych ocen.</p></div><div class="list-filters"><input class="filter-input" id="searchInput" placeholder="Szukaj wartości..." aria-label="Szukaj wartości"><select id="filterSelect" class="filter-select" aria-label="Które wartości pokazać"><option value="scored">Ocenione</option><option value="all">Wszystkie</option><option value="unscored">Bez oceny</option></select><select id="sortSelect" class="filter-select" aria-label="Sortowanie"><option value="desc">Od najwyższej</option><option value="asc">Od najniższej</option><option value="alpha">Alfabetycznie</option></select></div></div>
+      <div class="list-table"><div class="list-header"><div>Ocena</div><div>Wartość</div><div>Zmień ocenę</div><div>Tablica</div></div><div id="listRows"></div></div><div class="bottom-line">Zapisywane lokalnie w tej przeglądarce • wykonuj eksport JSON jako kopię zapasową.</div>
+    </div>
+  </main>
+</div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<input type="file" id="fileInput" class="file-input" accept=".json,application/json">
+<script>
+(()=>{
+'use strict';
+const SEED=[
+'AKCEPTACJA','DOKŁADNOŚĆ','AKTYWNOŚĆ','AMBICJA','PEWNOŚĆ SIEBIE','PIĘKNO','ŻYCZLIWOŚĆ','SPOKÓJ','SZCZEROŚĆ','INTELIGENCJA','WYGODA',
+'ZAANGAŻOWANIE','ZAUFANIE','ODWAGA','CIEKAWOŚĆ','SZACUNEK','BEZPIECZEŃSTWO','SZCZĘŚCIE','SPRAWIEDLIWOŚĆ','HUMOR','MIŁOŚĆ','DOJRZAŁOŚĆ',
+'SUKCES','ODPOCZYNEK','MĄDROŚĆ','MARZENIA','KREATYWNOŚĆ','ELASTYCZNOŚĆ','PRZYJAŹŃ','RODZINA','ODPOWIEDZIALNOŚĆ','TOLERANCJA','RZETELNOŚĆ',
+'WYTRWAŁOŚĆ','SAMODZIELNOŚĆ','ZDROWIE','UCZCIWOŚĆ','ROZWÓJ','WOLNOŚĆ','RÓWNOWAGA','WIARA'];
+const COLORS={yellow:'#fff0b4',peach:'#ffd7c8',mint:'#cbf1de',blue:'#cde8ff',violet:'#e8dbff',pink:'#ffdce8',gray:'#e7e9ee'};
+const KEY='moje-wartosci-whiteboard-v1';
+const $=id=>document.getElementById(id);
+const viewport=$('viewport'), stage=$('stage'), listRows=$('listRows');
+let notes=[], cam={x:45,y:25,z:.8},activeView='board', isMoving=false, saveTimer=null,toastTimer=null;
+function initialNotes(){return SEED.map((title,i)=>({id:'seed-'+i,title,color:'yellow',score:null,x:36+(i%7)*239+(i%3)*2,y:36+Math.floor(i/7)*204+(i%2)*3}));}
+function normalizeNote(n,i){
+ if(!n||typeof n!=='object')return null;
+ let x=Number(n.x),y=Number(n.y),s=n.score==null||n.score===''?null:Number(n.score);
+ return {id:typeof n.id==='string'&&n.id.length<80?n.id:'restored-'+i,title:String(n.title??'').slice(0,160),color:COLORS[n.color]?n.color:'yellow',score:s===null?null:Number.isInteger(s)&&s>=1&&s<=10?s:null,x:Number.isFinite(x)?Math.max(-100000,Math.min(100000,x)):0,y:Number.isFinite(y)?Math.max(-100000,Math.min(100000,y)):0};
+}
+function restore(){try{let v=JSON.parse(localStorage.getItem(KEY)||'null');if(v&&Array.isArray(v.notes)&&v.notes.length<=2000){let restored=v.notes.map(normalizeNote).filter(Boolean);if(restored.length){const ids=new Set();notes=restored.filter(n=>{if(ids.has(n.id))return false;ids.add(n.id);return true});return;}}}catch(e){}notes=initialNotes();}
+function saveNow(){clearTimeout(saveTimer);try{localStorage.setItem(KEY,JSON.stringify({version:1,updatedAt:new Date().toISOString(),notes}));}catch(e){toast('Nie udało się zapisać lokalnie. Wyeksportuj plik JSON.');}}
+function scheduleSave(){clearTimeout(saveTimer);saveTimer=setTimeout(saveNow,260);}
+function toast(msg){const el=$('toast');el.textContent=msg;el.classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('visible'),3200);}
+function scoreOptions(score){let out='<option value="">Bez oceny</option>';for(let i=1;i<=10;i++)out+=`<option value="${i}"${score===i?' selected':''}>${i} / 10</option>`;return out;}
+function renderNote(n){
+ const el=document.createElement('article');el.className='note';el.dataset.id=n.id;el.style.setProperty('--paper',COLORS[n.color]);el.style.setProperty('--tilt',`${((n.title.length*7+n.id.length)%7-3)*.35}deg`);el.style.left=n.x+'px';el.style.top=n.y+'px';
+ el.innerHTML=`<div class="note-top"><div class="color-control"><button type="button" class="swatch-trigger" title="Zmień kolor karteczki" aria-label="Zmień kolor karteczki" aria-expanded="false"><span class="swatch"></span><span class="chevron">⌄</span></button><div class="palette" hidden></div></div><button type="button" class="remove-note" title="Usuń karteczkę" aria-label="Usuń karteczkę">×</button><button type="button" class="grip" title="Przeciągnij, aby przesunąć" aria-label="Przeciągnij karteczkę (można też użyć strzałek)">⠿</button></div><textarea class="note-text" maxlength="160" rows="2" spellcheck="true" aria-label="Nazwa wartości"></textarea><div class="note-footer"><span class="score-label">Twoja ocena</span><select class="note-score" aria-label="Ocena wartości">${scoreOptions(n.score)}</select></div>`;
+ const input=el.querySelector('.note-text');input.value=n.title;input.addEventListener('input',()=>{n.title=input.value;autosize(input);scheduleSave();});autosize(input);
+ el.querySelector('.note-score').addEventListener('change',e=>{n.score=e.target.value===''?null:Number(e.target.value);updateCount();saveNow();});
+ const cc=el.querySelector('.color-control'),trigger=el.querySelector('.swatch-trigger'),palette=el.querySelector('.palette');
+ for(let [key,hex]of Object.entries(COLORS)){const btn=document.createElement('button');btn.type='button';btn.style.background=hex;btn.title=({yellow:'Żółty',peach:'Brzoskwiniowy',mint:'Miętowy',blue:'Niebieski',violet:'Fioletowy',pink:'Różowy',gray:'Szary'})[key];btn.setAttribute('aria-label',btn.title);if(n.color===key)btn.classList.add('selected');btn.addEventListener('click',e=>{e.stopPropagation();n.color=key;el.style.setProperty('--paper',COLORS[key]);palette.hidden=true;trigger.setAttribute('aria-expanded','false');palette.querySelectorAll('button').forEach(b=>b.classList.toggle('selected',b===btn));saveNow();});palette.appendChild(btn);}
+ trigger.addEventListener('click',e=>{e.stopPropagation();document.querySelectorAll('.palette').forEach(other=>{if(other!==palette){other.hidden=true;other.parentElement.querySelector('.swatch-trigger').setAttribute('aria-expanded','false')}});palette.hidden=!palette.hidden;trigger.setAttribute('aria-expanded',String(!palette.hidden));});
+ el.querySelector('.remove-note').addEventListener('click',()=>{if(!confirm('Usunąć tę karteczkę: '+n.title+'?'))return;notes=notes.filter(other=>other.id!==n.id);el.remove();updateCount();saveNow();toast('Usunięto karteczkę.');});
+ const grip=el.querySelector('.grip');grip.addEventListener('pointerdown',e=>startDrag(e,n,el,grip));
+ grip.addEventListener('keydown',e=>{let dx=0,dy=0,step=e.shiftKey?64:16;switch(e.key){case 'ArrowLeft':dx=-step;break;case 'ArrowRight':dx=step;break;case 'ArrowUp':dy=-step;break;case 'ArrowDown':dy=step;break;default:return}e.preventDefault();n.x+=dx;n.y+=dy;el.style.left=n.x+'px';el.style.top=n.y+'px';scheduleSave();});
+ stage.appendChild(el);autosize(input);
+}
+function autosize(el){el.style.height='0px';el.style.height=Math.max(77,el.scrollHeight)+'px';}
+function renderBoard(){stage.innerHTML='';notes.forEach(renderNote);updateCount();updateCamera();}
+function updateCount(){const scored=notes.filter(n=>n.score!==null).length;$('topCount').textContent=`Oceniono ${scored} z ${notes.length}`;$('listSubtitle').textContent=`${scored} ocenionych wartości z ${notes.length}. Możesz zmieniać wyniki również tutaj.`;}
+function startDrag(e,n,el,grip){if(e.button!==0&&e.pointerType==='mouse')return;e.preventDefault();e.stopPropagation();if(isMoving)return;isMoving=true;
+ const px=e.clientX,py=e.clientY,ox=n.x,oy=n.y;el.classList.add('dragging');grip.setPointerCapture(e.pointerId);
+ function move(ev){if(ev.pointerId!==e.pointerId)return;n.x=Math.round(ox+(ev.clientX-px)/cam.z);n.y=Math.round(oy+(ev.clientY-py)/cam.z);el.style.left=n.x+'px';el.style.top=n.y+'px';}
+ function stop(ev){if(ev.pointerId!==e.pointerId)return;el.classList.remove('dragging');grip.removeEventListener('pointermove',move);grip.removeEventListener('pointerup',stop);grip.removeEventListener('pointercancel',stop);isMoving=false;saveNow();}
+ grip.addEventListener('pointermove',move);grip.addEventListener('pointerup',stop);grip.addEventListener('pointercancel',stop);
+}
+function updateCamera(){stage.style.transform=`translate(${cam.x}px,${cam.y}px) scale(${cam.z})`;viewport.style.backgroundSize=`${24*cam.z}px ${24*cam.z}px`;viewport.style.backgroundPosition=`${cam.x}px ${cam.y}px`;$('zoomValue').textContent=Math.round(cam.z*100)+'%';}
+function zoomAt(next, cx,cy){next=Math.max(.4,Math.min(2,next));const q=next/cam.z;cam.x=cx-(cx-cam.x)*q;cam.y=cy-(cy-cam.y)*q;cam.z=next;updateCamera();}
+function fitBoard(){if(!notes.length)return;const r=viewport.getBoundingClientRect();let minx=Infinity,miny=Infinity,maxx=-Infinity,maxy=-Infinity;for(let n of notes){minx=Math.min(minx,n.x);miny=Math.min(miny,n.y);maxx=Math.max(maxx,n.x+225);maxy=Math.max(maxy,n.y+180);}const bw=maxx-minx,bh=maxy-miny;let z=Math.max(.4,Math.min(1.05,Math.min((r.width-85)/bw,(r.height-85)/bh)));if(!Number.isFinite(z))z=1;cam.z=z;cam.x=(r.width-bw*z)/2-minx*z;cam.y=(r.height-bh*z)/2-miny*z;updateCamera();}
+viewport.addEventListener('pointerdown',e=>{if(e.target!==viewport&&e.target!==stage)return;if(e.button!==0&&e.pointerType==='mouse')return;if(isMoving)return;e.preventDefault();const sx=e.clientX,sy=e.clientY,ox=cam.x,oy=cam.y;viewport.classList.add('panning');viewport.setPointerCapture(e.pointerId);function move(ev){if(ev.pointerId!==e.pointerId)return;cam.x=ox+ev.clientX-sx;cam.y=oy+ev.clientY-sy;updateCamera();}function stop(ev){if(ev.pointerId!==e.pointerId)return;viewport.classList.remove('panning');viewport.removeEventListener('pointermove',move);viewport.removeEventListener('pointerup',stop);viewport.removeEventListener('pointercancel',stop);}viewport.addEventListener('pointermove',move);viewport.addEventListener('pointerup',stop);viewport.addEventListener('pointercancel',stop);});
+viewport.addEventListener('wheel',e=>{e.preventDefault();let rect=viewport.getBoundingClientRect();zoomAt(cam.z*(e.deltaY>0?.93:1.07),e.clientX-rect.left,e.clientY-rect.top);},{passive:false});
+$('zoomIn').addEventListener('click',()=>zoomAt(cam.z*1.15,viewport.clientWidth/2,viewport.clientHeight/2));
+$('zoomOut').addEventListener('click',()=>zoomAt(cam.z/1.15,viewport.clientWidth/2,viewport.clientHeight/2));
+$('fitBtn').addEventListener('click',fitBoard);
+function switchView(view){activeView=view;const b=view==='board';$('boardPanel').hidden=!b;$('listPanel').hidden=b;$('boardToolbar').hidden=!b;$('listToolbar').hidden=b;$('boardTab').setAttribute('aria-selected',String(b));$('listTab').setAttribute('aria-selected',String(!b));if(b)updateCamera();else renderList();}
+$('boardTab').addEventListener('click',()=>switchView('board'));
+$('listTab').addEventListener('click',()=>switchView('list'));
+function renderList(){const q=$('searchInput').value.trim().toLocaleLowerCase('pl');const filter=$('filterSelect').value,sort=$('sortSelect').value;let arr=notes.filter(n=>(filter==='all'||(filter==='scored'&&n.score!==null)||(filter==='unscored'&&n.score===null))&&n.title.toLocaleLowerCase('pl').includes(q));arr.sort((a,b)=>sort==='alpha'?a.title.localeCompare(b.title,'pl'):(sort==='asc'?(a.score??99)-(b.score??99):(b.score??-1)-(a.score??-1))||a.title.localeCompare(b.title,'pl'));listRows.innerHTML='';
+ if(!arr.length){let empty=document.createElement('div');empty.className='empty-state';empty.innerHTML=`<div class="empty-emoji">✦</div><strong>${notes.some(n=>n.score!==null)?'Nie znaleziono pasujących wartości':'Jeszcze nie ma ocenionych wartości'}</strong><p>Wróć do tablicy i przypisz ocenę od 1 do 10.<br>Wszystkie zmiany pojawią się tutaj automatycznie.</p>`;listRows.appendChild(empty);return;}
+ for(let n of arr){let row=document.createElement('div');row.className='value-row';const rank=document.createElement('div');rank.className='rank'+(n.score!==null?' filled':'');rank.textContent=n.score===null?'—':n.score;rank.setAttribute('aria-label',n.score===null?'Bez oceny':`Ocena ${n.score} na 10`);
+ const namebox=document.createElement('div');namebox.style.minWidth='0';let sw=document.createElement('span');sw.className='list-color';sw.style.background=COLORS[n.color];let inp=document.createElement('input');inp.className='list-note-title';inp.value=n.title;inp.maxLength=160;inp.setAttribute('aria-label','Edytuj wartość');inp.addEventListener('input',()=>{n.title=inp.value;const boardEl=Array.from(stage.children).find(el=>el.dataset.id===n.id);if(boardEl){let t=boardEl.querySelector('textarea');t.value=n.title;autosize(t);}scheduleSave();});namebox.append(sw,inp);
+ let select=document.createElement('select');select.className='list-score';select.setAttribute('aria-label','Zmień ocenę wartości');select.innerHTML=scoreOptions(n.score);select.addEventListener('change',e=>{n.score=e.target.value===''?null:Number(e.target.value);const boardEl=Array.from(stage.children).find(el=>el.dataset.id===n.id);if(boardEl)boardEl.querySelector('.note-score').value=e.target.value;saveNow();updateCount();renderList();});
+ let goto=document.createElement('button');goto.type='button';goto.className='locate';goto.textContent='Pokaż →';goto.addEventListener('click',()=>{switchView('board');const rect=viewport.getBoundingClientRect();cam.z=Math.max(cam.z,.85);cam.x=rect.width/2-(n.x+109)*cam.z;cam.y=rect.height/2-(n.y+84)*cam.z;updateCamera();const target=Array.from(stage.children).find(el=>el.dataset.id===n.id);if(target){target.querySelector('.note-text').focus();}});
+ row.append(rank,namebox,select,goto);listRows.appendChild(row);}
+}
+$('searchInput').addEventListener('input',renderList);$('filterSelect').addEventListener('change',renderList);$('sortSelect').addEventListener('change',renderList);
+$('addBtn').addEventListener('click',()=>{const r=viewport.getBoundingClientRect();let n={id:'custom-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7),title:'NOWA WARTOŚĆ',color:'yellow',score:null,x:Math.round((r.width/2-cam.x)/cam.z-109),y:Math.round((r.height/2-cam.y)/cam.z-80)};notes.push(n);renderNote(n);updateCount();saveNow();const t=stage.lastChild.querySelector('.note-text');t.focus();t.select();toast('Dodano nową karteczkę.');});
+$('arrangeBtn').addEventListener('click',()=>{if(!confirm('Ułożyć wszystkie karteczki ponownie w siatkę? Oceny, kolory i treści pozostaną bez zmian.'))return;const cols=7;notes.forEach((n,i)=>{n.x=36+(i%cols)*239;n.y=36+Math.floor(i/cols)*207;});renderBoard();fitBoard();saveNow();toast('Karteczki ułożone w siatkę.');});
+function exportData(){let payload={app:'Moje wartości',format:'values-whiteboard',version:1,exportedAt:new Date().toISOString(),notes};let blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json;charset=utf-8'});let link=document.createElement('a');link.href=URL.createObjectURL(blob);let d=new Date();let date=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;link.download='moje-wartosci-'+date+'.json';document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(link.href),1500);toast('Wyeksportowano kopię JSON.');}
+$('exportBtn').addEventListener('click',exportData);$('exportBtn2').addEventListener('click',exportData);
+$('importBtn').addEventListener('click',()=>$('fileInput').click());
+$('fileInput').addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file)return;try{if(file.size>2e6)throw Error('Plik jest zbyt duży.');let obj=JSON.parse(await file.text());if(!obj||!Array.isArray(obj.notes)||obj.notes.length>2000)throw Error('Nieprawidłowa struktura pliku.');let rec=obj.notes.map(normalizeNote).filter(Boolean);if(!rec.length)throw Error('Brak wartości w pliku.');if(!confirm(`Wczytać ${rec.length} karteczek z pliku? Zastąpią obecny stan tablicy.`))return;const ids=new Set();notes=rec.filter(n=>{if(ids.has(n.id))return false;ids.add(n.id);return true});renderBoard();fitBoard();saveNow();toast('Zaimportowano dane.');}catch(err){alert('Nie udało się zaimportować pliku: '+err.message);}finally{e.target.value='';}});
+$('resetBtn').addEventListener('click',()=>{if(!confirm('Przywrócić wszystkie 41 początkowych wartości? Znikną obecne oceny, kolory, układ oraz własne karteczki. Najpierw możesz wykonać eksport JSON.'))return;notes=initialNotes();renderBoard();fitBoard();saveNow();toast('Przywrócono początkową tablicę.');});
+document.addEventListener('click',e=>{if(!e.target.closest('.color-control'))document.querySelectorAll('.palette').forEach(p=>{p.hidden=true;p.parentElement.querySelector('.swatch-trigger').setAttribute('aria-expanded','false')});});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.palette').forEach(p=>{p.hidden=true;p.parentElement.querySelector('.swatch-trigger').setAttribute('aria-expanded','false')});});
+function initialCamera(){const r=viewport.getBoundingClientRect();let minx=Infinity,miny=Infinity,maxx=-Infinity;for(const n of notes){minx=Math.min(minx,n.x);miny=Math.min(miny,n.y);maxx=Math.max(maxx,n.x+225);}const w=maxx-minx;cam.z=Math.max(.45,Math.min(.86,(r.width-65)/Math.max(w,1)));cam.x=(r.width-w*cam.z)/2-minx*cam.z;cam.y=30-miny*cam.z;updateCamera();}
+restore();renderBoard();requestAnimationFrame(initialCamera);
+})();
+</script>
+</body>
+</html>
